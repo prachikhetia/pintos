@@ -5,6 +5,9 @@
 #include <list.h>
 #include <stdint.h>
 
+
+#include "threads/fixedpoint.h"
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -93,6 +96,18 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+    struct list_elem wait_elem;
+    //struct semaphore *thread_ready;
+    int64_t wake_tick;
+
+    struct lock *lock_waiting_for;
+    struct list locks_acquired;
+    int base_priority;
+
+    fixed_point_t recent_cpu;
+
+    int nice;
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -106,6 +121,14 @@ struct thread
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
+
+//PHASE 1.3
+
+void thread_update_load_avg(void);
+void thread_update_mlfqs_priorty(void);
+void thread_update_recent_cpu(void);
+void thread_update_load_avg(void);
+
 
 void thread_init (void);
 void thread_start (void);
@@ -137,5 +160,7 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+void add_to_wait_list (int64_t);
 
 #endif /* threads/thread.h */
